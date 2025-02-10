@@ -15,9 +15,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['user_name'] = $user['username'];
-            $_SESSION['user_type_id'] = $user['user_type_id']; // Store user type
+            $_SESSION['user_type_id'] = $user['user_type_id']; 
 
-            header("Location: dashboard.php"); // Redirect to dashboard
+            header("Location: dashboard.php");
             exit();
         } else {
             $error = "Invalid password.";
