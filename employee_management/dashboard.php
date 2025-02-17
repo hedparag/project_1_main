@@ -25,14 +25,19 @@ $user_type_id = $row['user_type_id'] ?? $user_type_id;
 $employee_skills = 'Not Available';
 $salary = 'Not Available';
 if ($employee_id) {
-    $query = "SELECT employee_name, employee_skills, salary FROM employees WHERE employee_id = $1";
+    $query = "SELECT employee_id, employee_name, employee_email, employee_phone, salary, employee_details, employee_skills FROM employees WHERE employee_id = $1";
     $result = pg_query_params($conn, $query, array($employee_id));
     
     if ($result) {
         $userData = pg_fetch_assoc($result);
-        $employee_skills = $userData['employee_skills'] ?? 'Not Available';
+        $employee_name = $userData['employee_name'] ?? 'Not Available';
+        $employee_email = $userData['employee_email'] ?? 'Not Available';
+        $employee_phone = $userData['employee_phone'] ?? 'Not Available';
         $salary = $userData['salary'] ?? 'Not Available';
+        $employee_details = $userData['employee_details'] ?? 'Not Available';
+        $employee_skills = $userData['employee_skills'] ?? 'Not Available';
     }
+    
 }
 ?>
 
@@ -43,76 +48,111 @@ if ($employee_id) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container p-3">
-        <h2 class="text-center mt-3">Welcome, <?php echo htmlspecialchars($user_name); ?></h2>
+<header>
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+          <div class="container-fluid">
+            <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5 text-center">
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="home.html">HOME</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="register.php">REGISTER</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="login.php">LOGIN</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link active text-primary" aria-current="page" href="dashboard.php">DASHBOARD</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="logout.php">LOGOUT</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
+    <div class="container p-5 mt-5">
+        <h2 class="text-center">Welcome, <?php echo htmlspecialchars($employee_name); ?>!</h2>
         <div class="row">
-            <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto text-center">
-                <p><strong>Your Skills:</strong> <?php echo htmlspecialchars($employee_skills); ?></p>
-                <p><strong>Your Salary:</strong> <?php echo htmlspecialchars($salary); ?></p>
+            <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto">
+                <p><strong>Employee ID :</strong> <?php echo htmlspecialchars($employee_id); ?></p>
+                <p><strong>Name :</strong> <?php echo htmlspecialchars($employee_name); ?></p>
+                <p><strong>Email :</strong> <?php echo htmlspecialchars($employee_email); ?></p>
+                <p><strong>Phone Number :</strong> <?php echo htmlspecialchars($employee_phone); ?></p>
+                <p><strong>Salary :</strong> <?php echo htmlspecialchars($salary); ?></p>
+                <p><strong>Details :</strong> <?php echo htmlspecialchars($employee_details); ?></p>
+                <p><strong>Skills :</strong> <?php echo htmlspecialchars($employee_skills); ?></p>
                 <br>
                 <a href="logout.php" class="btn btn-danger">Logout</a>
             </div>
-            <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto text-center">
+            <div class="col-12 col-md-6 p-3 mt-5 m-auto">
                 <?php if ($user_type_id == 1): ?>
                 <h3>Admin Panel</h3>
-                <ul>
-                    <li><a href="approve_users.php">Approve Users</a></li>
-                    <li><a href="edit_profile.php">Edit Profiles</a></li>
-                    <li><a href="view_reports.php">View Reports</a></li>
-                    <li><a href="settings.php">Settings</a></li>
+                <ul class="list-unstyled nav flex-column">
+                    <li class="nav-item">
+                        <a href="view_profiles.php" class="nav-link text-dark">View Profiles</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="view_reports.php" class="nav-link text-dark">View Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="settings.php" class="nav-link text-dark">Settings</a>
+                    </li>
                 </ul>
-                <div class="container mt-4">
-                    <h2>Pending Employee Approvals</h2>
-                    <?php
-                    $query = "SELECT * FROM employees WHERE status = FALSE";
-                    $result = pg_query($conn, $query);
-                    if (pg_num_rows($result) > 0): ?>
-                        <table class="table">
-                            <thead>
+
+                
+                <h3 class="mt-4">Pending Employee Approvals</h3>
+                <?php
+                $query = "SELECT * FROM employees WHERE status = FALSE";
+                $result = pg_query($conn, $query);
+                if (pg_num_rows($result) > 0): ?>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Employee Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = pg_fetch_assoc($result)) { ?>
                                 <tr>
-                                    <th>Employee Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Action</th>
+                                    <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['employee_email']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['employee_phone']); ?></td>
+                                    <td><a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve" class="btn btn-success">Approve</a></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php while ($row = pg_fetch_assoc($result)) { ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['employee_email']); ?></td>
-                                        <td><?php echo htmlspecialchars($row['employee_phone']); ?></td>
-                                        <td>
-                                            <a href="approve_employee.php?employee_id=<?php echo $row['employee_id']; ?>" class="btn btn-success">Approve</a>
-                                        </td>
-                                    </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
-                    <?php else: ?>
-                        <p class="text-muted">No employees pending approval.</p>
-                    <?php endif; ?>
-                </div>
-                <?php elseif ($user_type_id == 2): ?>
-                <h3>Manager Panel</h3>
-                <ul>
-                    <li><a href="manage_employees.php">Manage Employees</a></li>
-                    <li><a href="generate_reports.php">Generate Reports</a></li>
-                </ul>
-                <?php elseif ($user_type_id == 3): ?>
-                <h3>Employee Dashboard</h3>
-                <ul>
-                    <li><a href="view_tasks.php">View Tasks</a></li>
-                    <li><a href="submit_reports.php">Submit Reports</a></li>
-                </ul>
+                            <?php } ?>
+                        </tbody>
+                    </table>
                 <?php else: ?>
-                <h3>Intern Dashboard</h3>
-                <ul>
-                    <li><a href="learning_materials.php">Learning Materials</a></li>
-                    <li><a href="submit_progress.php">Submit Progress</a></li>
-                </ul>
+                    <p class="text-muted">No employees pending approval.</p>
+                <?php endif; ?>
+                <?php elseif ($user_type_id == 2): ?>
+                    <h3>Manager Panel</h3>
+                    <ul>
+                        <li><a href="manage_employees.php">Manage Employees</a></li>
+                        <li><a href="generate_reports.php">Generate Reports</a></li>
+                    </ul>
+                <?php elseif ($user_type_id == 3): ?>
+                    <h3>Employee Dashboard</h3>
+                    <ul>
+                        <li><a href="view_tasks.php">View Tasks</a></li>
+                        <li><a href="submit_reports.php">Submit Reports</a></li>
+                    </ul>
+                <?php else: ?>
+                    <h3>Intern Dashboard</h3>
+                    <ul>
+                        <li><a href="learning_materials.php">Learning Materials</a></li>
+                        <li><a href="submit_progress.php">Submit Progress</a></li>
+                    </ul>
                 <?php endif; ?>
             </div>
         </div>
