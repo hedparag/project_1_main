@@ -36,9 +36,37 @@ pg_close($conn);
     <meta charset="UTF-8">
     <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    </style>
 </head>
 <body>
-<div class="container p-3">
+<header>
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+          <div class="container-fluid">
+            <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5 text-center">
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="home.html">HOME</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="register.php">REGISTER</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link active text-primary" aria-current="page" href="login.php">LOGIN</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="dashboard.php">DASHBOARD</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="logout.php">LOGOUT</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
+<div class="container p-5 mt-5">
     <h2 class="text-center">Login</h2>
     <form method="POST" action="login.php">
         <div class="mb-3">
