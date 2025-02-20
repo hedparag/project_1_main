@@ -21,7 +21,9 @@ if (!isset($_SESSION['employee_id'])) {
 
 $employee_id = $_SESSION['employee_id'];
 
-$query = "SELECT * FROM employees WHERE employee_id = $1";
+$query = "SELECT e.*, u.username FROM employees e
+          LEFT JOIN users u ON e.employee_id = u.employee_id
+          WHERE e.employee_id = $1";
 $result = pg_query_params($conn, $query, array($employee_id));
 
 if (pg_num_rows($result) == 0) {
@@ -31,20 +33,24 @@ if (pg_num_rows($result) == 0) {
 }
 
 $employee = pg_fetch_assoc($result);
+$existing_username = $employee['username'] ?? '';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['new_password'], $_POST['confirm_password'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['new_password'], $_POST['confirm_password'])) {
+    $username = trim($_POST['username']);
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
 
-    if (empty($new_password) || empty($confirm_password)) {
+    if (empty($username)) {
+        $_SESSION['error'] = "Username cannot be empty.";
+    } elseif(empty($new_password) || empty($confirm_password)) {
         $_SESSION['error'] = "Password fields cannot be empty.";
     } elseif ($new_password !== $confirm_password) {
         $_SESSION['error'] = "Passwords do not match.";
     } else {
         $password = password_hash($new_password, PASSWORD_DEFAULT);
 
-        $update_query = "UPDATE users SET password = $1 WHERE employee_id = $2";
-        $update_result = pg_query_params($conn, $update_query, array($password, $employee_id));
+        $update_query = "UPDATE users SET username = $1, password = $2 WHERE employee_id = $3";
+        $update_result = pg_query_params($conn, $update_query, array($username, $password, $employee_id));
 
         if ($update_result) {
             $_SESSION['success'] = "Password reset successfully!";
@@ -80,6 +86,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['new_password'], $_POST
 
         <form action="" method="POST">
             <input type="hidden" name="employee_id" value="<?php echo htmlspecialchars($_SESSION['employee_id']); ?>">
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($existing_username); ?>" required>
+            </div>
 
             <div class="mb-3">
                 <label for="new_password" class="form-label">New Password</label>
