@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 include("include/config.php");
 
 if (!isset($_SESSION['user_id'])) {
@@ -60,9 +61,6 @@ if ($employee_id) {
                   <a class="nav-link" href="home.html">HOME</a>
                 </li>
                 <li class="nav-item px-1">
-                  <a class="nav-link" href="register.php">REGISTER</a>
-                </li>
-                <li class="nav-item px-1">
                   <a class="nav-link" href="login.php">LOGIN</a>
                 </li>
                 <li class="nav-item px-1">
@@ -79,18 +77,52 @@ if ($employee_id) {
     <div class="container p-5 mt-5">
         <h2 class="text-center">Welcome, <?php echo htmlspecialchars($employee_name); ?>!</h2>
         <div class="row">
-            <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto">
-                <p><strong>Employee ID :</strong> <?php echo htmlspecialchars($employee_id); ?></p>
-                <p><strong>Name :</strong> <?php echo htmlspecialchars($employee_name); ?></p>
-                <p><strong>Email :</strong> <?php echo htmlspecialchars($employee_email); ?></p>
-                <p><strong>Phone Number :</strong> <?php echo htmlspecialchars($employee_phone); ?></p>
-                <p><strong>Salary :</strong> <?php echo htmlspecialchars($salary); ?></p>
-                <p><strong>Details :</strong> <?php echo htmlspecialchars($employee_details); ?></p>
-                <p><strong>Skills :</strong> <?php echo htmlspecialchars($employee_skills); ?></p>
-                <br>
-                <a href="logout.php" class="btn btn-danger">Logout</a>
+        <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h4 class="card-title text-center mb-3">Your Details</h4>
+                    <hr>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Employee ID:</th>
+                                <td><?php echo htmlspecialchars($employee_id); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Name:</th>
+                                <td><?php echo htmlspecialchars($employee_name); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td><?php echo htmlspecialchars($employee_email); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Phone Number:</th>
+                                <td><?php echo htmlspecialchars($employee_phone); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Salary:</th>
+                                <td>₹<?php echo htmlspecialchars($salary); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Details:</th>
+                                <td><?php echo htmlspecialchars($employee_details); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Skills:</th>
+                                <td><?php echo htmlspecialchars($employee_skills); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="text-center mt-3">
+                        <a href="logout.php" class="btn btn-danger">Logout</a>
+                    </div>
+                </div>
             </div>
-            <div class="col-12 col-md-6 p-3 mt-5 m-auto">
+        </div>
+
+            <div class="col-12 col-md-6 p-3 mt-5 text-center">
                 <?php if ($user_type_id == 1): ?>
                 <h3>Admin Panel</h3>
                 <ul class="list-unstyled nav flex-column">

@@ -59,9 +59,6 @@ pg_close($conn);
                   <a class="nav-link" href="home.html">HOME</a>
                 </li>
                 <li class="nav-item px-1">
-                  <a class="nav-link" href="register.php">REGISTER</a>
-                </li>
-                <li class="nav-item px-1">
                   <a class="nav-link active text-primary" aria-current="page" href="login.php">LOGIN</a>
                 </li>
                 <li class="nav-item px-1">
@@ -91,6 +88,9 @@ pg_close($conn);
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
     </form>
+    <div class="container p5 text-center ">
+      Fresh Face? <a href="register.php">Register Here!</a>
+    </div>
 </div>
 </body>
 </html>

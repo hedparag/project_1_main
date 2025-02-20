@@ -38,9 +38,6 @@ if (!$result) {
                   <a class="nav-link" href="home.html">HOME</a>
                 </li>
                 <li class="nav-item px-1">
-                  <a class="nav-link" href="register.php">REGISTER</a>
-                </li>
-                <li class="nav-item px-1">
                   <a class="nav-link" href="login.php">LOGIN</a>
                 </li>
                 <li class="nav-item px-1">
@@ -76,7 +73,7 @@ if (!$result) {
                         <?php echo ($row['status'] == 't') ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-danger">Pending</span>'; ?>
                     </td>
                     <td>
-                        <a href="edit_employee.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-warning">Edit Details</a>
+                        <a href="view_details.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-warning">View Details</a>
 
                         <?php if ($row['status'] === 't'): ?>
                           <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-primary">Reset Username & Password</a>
