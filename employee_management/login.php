@@ -3,28 +3,31 @@ session_start();
 include("include/config.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+  if(!hash_equals($SESSION['csrf_token'], $_POST['csrf_token'])) {
+    die("CSRF token validation failed.")
+  }
 
-    $query = "SELECT user_id, username, password, user_type_id FROM users WHERE username = $1";
-    $result = pg_query_params($conn, $query, array($username));
+  $username = trim($_POST['username']);
+  $password = trim($_POST['password']);
 
-    if ($result && pg_num_rows($result) > 0) {
-        $user = pg_fetch_assoc($result);
+  $query = "SELECT user_id, username, password, user_type_id FROM users WHERE username = $1";
+  $result = pg_query_params($conn, $query, array($username));
 
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['user_name'] = $user['username'];
-            $_SESSION['user_type_id'] = $user['user_type_id']; 
+  if ($result && pg_num_rows($result) > 0) {
+    $user = pg_fetch_assoc($result);
 
-            header("Location: dashboard.php");
-            exit();
-        } else {
-            $error = "Invalid password.";
-        }
-    } else {
+      if (password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['user_name'] = $user['username'];
+        $_SESSION['user_type_id'] = $user['user_type_id']; 
+        header("Location: dashboard.php");
+        exit();
+      } else {
+        $error = "Invalid password.";
+      }
+  } else {
         $error = "User not found.";
-    }
+  }
 }
 pg_close($conn);
 ?>

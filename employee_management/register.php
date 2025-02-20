@@ -1,9 +1,12 @@
 <?php
 include("include/config.php");
-
 $errors = [];
  
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!hash_equals($SESSION['csrf_token'], $_POST['csrf_token'])) {
+        die("CSRF token validation failed.")
+    }
+
     $employee_name = trim($_POST['employee_name']);
     $employee_email = trim($_POST['employee_email']);
     $employee_phone = trim($_POST['employee_phone']);
