@@ -2,6 +2,10 @@
 session_start();
 include("include/config.php");
 
+if(empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type_id'] !== '1') {
     header("Location: login.php");
     exit();
@@ -10,6 +14,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type_id'] !== '1') {
 $errors = [];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Invalid CSRF token");
+    }
+
     $employee_name = trim($_POST['employee_name']);
     $employee_email = trim($_POST['employee_email']);
     $employee_phone = trim($_POST['employee_phone']);
@@ -109,6 +117,8 @@ $dept_result = pg_query($conn, $dept_query);
         <?php endif; ?>
 
         <form action="" method="POST">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+
             <div class="mb-3">
                 <label class="form-label">Full Name</label>
                 <input type="text" class="form-control" name="employee_name" required>

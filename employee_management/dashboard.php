@@ -36,8 +36,7 @@ if ($employee_id) {
         $salary = $userData['salary'] ?? 'Not Available';
         $employee_details = $userData['employee_details'] ?? 'Not Available';
         $employee_skills = $userData['employee_skills'] ?? 'Not Available';
-    }
-    
+    }  
 }
 ?>
 

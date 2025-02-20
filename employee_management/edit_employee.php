@@ -1,21 +1,41 @@
 <?php
+session_start();
 include("include/config.php");
 
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    $query = "SELECT * FROM employees WHERE employee_id=$1";
-    $stmt = pg_prepare($conn, "fetch_employee", $query);
-    $result = pg_execute($conn, "fetch_employee", array($id));
+if (!isset($_GET['id']) && !isset($_SESSION['employee_id'])) {
+    $_SESSION['error'] = "Invalid employee ID";
+    header("Location: view_profiles.php");
+    exit();
+}
 
-    if ($result && pg_num_rows($result) > 0) {
-        $employee = pg_fetch_assoc($result);
-    } else {
-        die("Employee not found.");
-    }
+if (isset($_GET['id'])) {
+    $_SESSION['employee_id'] = $_GET['id'];
+    header("Location: edit_employee.php"); // Redirect to remove ?id= from URL
+    exit();
+}
+
+$employee_id = $_SESSION['employee_id'];
+
+$query = "SELECT * FROM employees WHERE employee_id = $1";
+$result = pg_query_params($conn, $query, array($employee_id));
+$employee = pg_fetch_assoc($result);
+
+if (!$employee) {
+    $_SESSION['error'] = "Employee not found.";
+    header("Location: view_profiles.php");
+    exit();
+}
+
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $employee_id = $_POST['employee_id'];
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
+    $employee_id = $_SESSION['employee_id'];
     $employee_name = $_POST['employee_name'];
     $employee_email = $_POST['employee_email'];
     $employee_phone = $_POST['employee_phone'];
@@ -27,15 +47,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_type_id = $_POST['user_type_id'];
     $department_id = $_POST['department_id'];
     $position_id = $_POST['position_id'];
-    $username = $_POST['username'];
-    $password = $_POST['password'];
 
     $update_employee = "UPDATE employees SET 
     employee_name=$1, employee_email=$2, employee_phone=$3, salary=$4, profile_image=$5, 
     employee_details=$6, employee_skills=$7, dob=$8, user_type_id=$9, department_id=$10, position_id=$11 
     WHERE employee_id=$12";
 
-    $stmt = pg_prepare($conn, "update_employee", $update_employee);
+    pg_prepare($conn, "update_employee", $update_employee);
     $result = pg_execute($conn, "update_employee", array(
         $employee_name, $employee_email, $employee_phone, $salary, 
         $profile_image, $employee_details, $employee_skills, $dob, 
@@ -43,38 +61,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ));
 
     if ($result) {
-        echo "Employee updated successfully.";
-        header("Location: view_profiles.php");
+        $_SESSION['success'] = "Employee updated successfully.";
+    } else {
+        $_SESSION['success'] = "Error updating employee.";
+    }
+    header("Location: view_profiles.php");
         exit();
-    } else {
-        echo "Error updating employee.";
-    }
-
-    $check_user = "SELECT user_id FROM users WHERE employee_id=$1";
-    $stmt = pg_prepare($conn, "check_user", $check_user);
-    $result = pg_execute($conn, "check_user", array($employee_id));
-
-    if ($result && pg_num_rows($result) > 0) {
-        if (!empty($password)) {
-            $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-            $update_user = "UPDATE users SET username=$1, password=$2 WHERE employee_id=$3";
-            $stmt = pg_prepare($conn, "update_user", $update_user);
-            pg_execute($conn, "update_user", array($username, $hashed_password, $employee_id));
-        } else {
-            $update_user = "UPDATE users SET username=$1 WHERE employee_id=$2";
-            $stmt = pg_prepare($conn, "update_user", $update_user);
-            pg_execute($conn, "update_user", array($username, $employee_id));
-        }
-    } else {
-        if (!empty($password)) {
-            $hashed_password = password_hash($password, PASSWORD_BCRYPT);
-            $insert_user = "INSERT INTO users (employee_id, username, password) VALUES ($1, $2, $3)";
-            $stmt = pg_prepare($conn, "insert_user", $insert_user);
-            pg_execute($conn, "insert_user", array($employee_id, $username, $hashed_password));
-        }
-    }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -97,6 +90,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
 
         <form action="" method="POST" class="mt-4">
+        <input type="hidden" name="employee_id" value="<?php echo htmlspecialchars($_SESSION['employee_id']); ?>">
+
             <div class="mb-3">
                 <label class="form-label">Employee Id</label>
                 <input type="number" class="form-control" name="employee_id" value="<?php echo htmlspecialchars($employee['employee_id']); ?>" readonly required>
@@ -114,11 +109,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mb-3">
                 <label class="form-label">Phone</label>
                 <input type="text" class="form-control" name="employee_phone" value="<?php echo htmlspecialchars($employee['employee_phone']); ?>" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="username" class="form-label">Username</label>
-                <input type="text" name="username" id="username" class="form-label" required>
             </div>
 
             <div class="mb-3">
@@ -176,10 +166,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Set Password</label>
-                <input type="password" name="password" id="password" class="form-label">
-            </div>
+            <?php if ($employee['status'] === 't'): ?>
+                <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($employee['employee_id']); ?>&action=reject" class="btn btn-danger">Reject</a>
+            <?php else: ?>
+                <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($employee['employee_id']); ?>&action=approve" class="btn btn-success">Approve</a>
+            <?php endif; ?>
 
             <button type="submit" class="btn btn-primary">Save Edited Details</button>
             <a href="view_profiles.php" class="btn btn-secondary">Cancel</a>

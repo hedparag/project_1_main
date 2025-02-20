@@ -7,13 +7,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type_id'] !== '1') {
     exit();
 }
 
-if (!isset($_GET['id'])) {
+if (isset($_GET['id'])) {
+    $_SESSION['employee_id'] = $_GET['id'];
+    header("Location: reset_password.php");
+    exit();
+}
+
+if (!isset($_SESSION['employee_id'])) {
     $_SESSION['error'] = "Employee ID is required.";
     header("Location: edit_profile.php");
     exit();
 }
 
-$employee_id = $_GET['id'];
+$employee_id = $_SESSION['employee_id'];
 
 $query = "SELECT * FROM employees WHERE employee_id = $1";
 $result = pg_query_params($conn, $query, array($employee_id));
@@ -42,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['new_password'], $_POST
 
         if ($update_result) {
             $_SESSION['success'] = "Password reset successfully!";
+            unset($_SESSION['employee_id']);
             header("Location: edit_profile.php");
             exit();
         } else {
@@ -72,6 +79,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['new_password'], $_POST
         <?php endif; ?>
 
         <form action="" method="POST">
+            <input type="hidden" name="employee_id" value="<?php echo htmlspecialchars($_SESSION['employee_id']); ?>">
+
             <div class="mb-3">
                 <label for="new_password" class="form-label">New Password</label>
                 <input type="password" class="form-control" name="new_password" required>

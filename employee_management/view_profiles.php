@@ -78,8 +78,15 @@ if (!$result) {
                         <?php echo ($row['status'] == 't') ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-danger">Pending</span>'; ?>
                     </td>
                     <td>
-                        <a href="edit_employee.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-warning">Edit</a>
-                        <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-primary">Reset Password</a>
+                        <a href="edit_employee.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-warning">Edit Details</a>
+                        <!-- <p>Debug: edit_employee.php?id=<?php echo htmlspecialchars($row['employee_id']); ?></p> -->
+
+                        <?php if ($row['status'] === 't'): ?>
+                          <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-primary">Reset Username & Password</a>
+                        <?php else: ?>
+                          <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-secondary disabled">Reset Username & Password</a>
+                        <?php endif; ?>
+
                         <?php if ($row['status'] === 't'): ?>
                             <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" class="btn btn-danger">Reject</a>
                         <?php else: ?>
