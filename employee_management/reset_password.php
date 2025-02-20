@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+$invalid = 0;
+if(md5($_GET['id'].'abcd') != $_GET['hash']){
+    $invalid = 1;
+}
+
 include("include/config.php");
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type_id'] !== '1') {
@@ -7,19 +13,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type_id'] !== '1') {
     exit();
 }
 
-if (isset($_GET['id'])) {
-    $_SESSION['employee_id'] = $_GET['id'];
-    header("Location: reset_password.php");
-    exit();
-}
-
-if (!isset($_SESSION['employee_id'])) {
+if (!isset($_GET['id'])) {
     $_SESSION['error'] = "Employee ID is required.";
-    header("Location: edit_profile.php");
+    header("Location: view_profiles.php");
     exit();
 }
 
-$employee_id = $_SESSION['employee_id'];
+$employee_id = $_GET['id'] ?? null;
 
 $query = "SELECT e.*, u.username FROM employees e
           LEFT JOIN users u ON e.employee_id = u.employee_id
@@ -34,6 +34,10 @@ if (pg_num_rows($result) == 0) {
 
 $employee = pg_fetch_assoc($result);
 $existing_username = $employee['username'] ?? '';
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['new_password'], $_POST['confirm_password'])) {
     $username = trim($_POST['username']);
@@ -55,6 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['ne
         if ($update_result) {
             $_SESSION['success'] = "Password reset successfully!";
             unset($_SESSION['employee_id']);
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             header("Location: edit_profile.php");
             exit();
         } else {
@@ -74,6 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['ne
 </head>
 <body>
     <div class="container p-5">
+        <?php if($invalid == 0) { ?>
         <h2>Reset Password for <?php echo htmlspecialchars($employee['employee_name']); ?></h2>
         
         <?php if (isset($_SESSION['error'])): ?>
@@ -85,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['ne
         <?php endif; ?>
 
         <form action="" method="POST">
-            <input type="hidden" name="employee_id" value="<?php echo htmlspecialchars($_SESSION['employee_id']); ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
@@ -100,9 +106,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'], $_POST['ne
                 <label for="confirm_password" class="form-label">Confirm Password</label>
                 <input type="password" class="form-control" name="confirm_password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Reset Password</button>
+            <button type="submit" class="btn btn-primary">Update</button>
             <a href="edit_profile.php" class="btn btn-secondary">Cancel</a>
         </form>
+        <?php } else { ?>
+            <div class="alert alert-danger" role="alert">
+                INVALID USER ID.
+            </div>
+        <?php } ?>
     </div>
 </body>
 </html>

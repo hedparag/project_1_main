@@ -1,27 +1,21 @@
 <?php
 session_start();
+
+$invalid = 0;
+if(md5($_GET['id'].'abcd') != $_GET['hash']){
+    $invalid = 1;
+}
+
 include("include/config.php");
 
-if (!isset($_GET['id']) && !isset($_SESSION['employee_id'])) {
-    $_SESSION['error'] = "Invalid employee ID";
-    header("Location: view_profiles.php");
-    exit();
-}
-
-if (isset($_GET['id'])) {
-    $_SESSION['employee_id'] = $_GET['id'];
-    header("Location: edit_employee.php"); // Redirect to remove ?id= from URL
-    exit();
-}
-
-$employee_id = $_SESSION['employee_id'];
+$employee_id = $_GET['id'];
 
 $query = "SELECT * FROM employees WHERE employee_id = $1";
 $result = pg_query_params($conn, $query, array($employee_id));
 $employee = pg_fetch_assoc($result);
 
 if (!$employee) {
-    $_SESSION['error'] = "Employee not found.";
+    // $_SESSION['error'] = "Employee not found.";
     header("Location: view_profiles.php");
     exit();
 }
@@ -35,7 +29,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("CSRF token validation failed.");
     }
 
-    $employee_id = $_SESSION['employee_id'];
     $employee_name = $_POST['employee_name'];
     $employee_email = $_POST['employee_email'];
     $employee_phone = $_POST['employee_phone'];
@@ -61,7 +54,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ));
 
     if ($result) {
-        $_SESSION['success'] = "Employee updated successfully.";
+        // $_SESSION['success'] = "Employee updated successfully.";
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     } else {
         $_SESSION['success'] = "Error updating employee.";
     }
@@ -80,6 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <div class="container p-5">
+        <?php if($invalid == 0) { ?>
         <h2 class="text-center">Edit Employee Details</h2>
 
         <?php if (isset($_SESSION['error'])): ?>
@@ -90,12 +85,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php endif; ?>
 
         <form action="" method="POST" class="mt-4">
-        <input type="hidden" name="employee_id" value="<?php echo htmlspecialchars($_SESSION['employee_id']); ?>">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
-            <div class="mb-3">
-                <label class="form-label">Employee Id</label>
-                <input type="number" class="form-control" name="employee_id" value="<?php echo htmlspecialchars($employee['employee_id']); ?>" readonly required>
-            </div>
             <div class="mb-3">
                 <label class="form-label">Full Name</label>
                 <input type="text" class="form-control" name="employee_name" value="<?php echo htmlspecialchars($employee['employee_name']); ?>" readonly required>
@@ -175,6 +166,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <button type="submit" class="btn btn-primary">Save Edited Details</button>
             <a href="view_profiles.php" class="btn btn-secondary">Cancel</a>
         </form>
+        <?php } else { ?>
+            <div class="alert alert-danger" role="alert">
+                INVALID USER ID.
+            </div>
+        <?php } ?>
     </div>
 </body>
 </html>

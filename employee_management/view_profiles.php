@@ -59,7 +59,6 @@ if (!$result) {
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Department</th>
@@ -70,7 +69,6 @@ if (!$result) {
             <tbody>
                 <?php while ($row = pg_fetch_assoc($result)) { $data[] = $row; ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($row['employee_id']); ?></td>
                     <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
                     <td><?php echo htmlspecialchars($row['employee_email']); ?></td>
                     <td><?php echo htmlspecialchars($row['department_name']); ?></td>
@@ -78,11 +76,10 @@ if (!$result) {
                         <?php echo ($row['status'] == 't') ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-danger">Pending</span>'; ?>
                     </td>
                     <td>
-                        <a href="edit_employee.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-warning">Edit Details</a>
-                        <!-- <p>Debug: edit_employee.php?id=<?php echo htmlspecialchars($row['employee_id']); ?></p> -->
+                        <a href="edit_employee.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-warning">Edit Details</a>
 
                         <?php if ($row['status'] === 't'): ?>
-                          <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-primary">Reset Username & Password</a>
+                          <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-primary">Reset Username & Password</a>
                         <?php else: ?>
                           <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-secondary disabled">Reset Username & Password</a>
                         <?php endif; ?>

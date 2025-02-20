@@ -25,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_name'] = $user['username'];
             $_SESSION['user_type_id'] = $user['user_type_id']; 
 
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
             header("Location: dashboard.php");
             exit();
         } else {
