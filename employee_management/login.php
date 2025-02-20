@@ -2,7 +2,15 @@
 session_start();
 include("include/config.php");
 
+if (empty($_SESSION['csrf_token'])) {
+  $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
     $username = $_POST['username'];
     $password = $_POST['password'];
 
@@ -69,6 +77,8 @@ pg_close($conn);
 <div class="container p-5 mt-5">
     <h2 class="text-center">Login</h2>
     <form method="POST" action="login.php">
+        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+
         <div class="mb-3">
             <label class="form-label">Username</label>
             <input type="text" class="form-control" name="username" placeholder="Enter your username" required>
