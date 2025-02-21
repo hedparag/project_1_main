@@ -15,7 +15,7 @@ $action = $_GET['action'];
 
 if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
 
-    $query = "SELECT employee_id, employee_name, employee_email FROM employees WHERE employee_id = $1";
+    $query = "SELECT employee_id, employee_name, employee_email, user_type_id FROM employees WHERE employee_id = $1";
     $result = pg_query_params($conn, $query, array($employee_id));
     $employee = pg_fetch_assoc($result);
 
@@ -67,17 +67,18 @@ if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
     
     $employee_id = $_POST['employee_id'];
 
-    $query = "SELECT employee_id, employee_name, employee_email FROM employees WHERE employee_id = $1";
+    $query = "SELECT employee_id, employee_name, employee_email, user_type_id FROM employees WHERE employee_id = $1";
     $result = pg_query_params($conn, $query, array($employee_id));
     $employee = pg_fetch_assoc($result);
 
     if ($employee) {
-        $insert_query = "INSERT INTO users (employee_id, full_name, username, password, status)
-                         VALUES ($1, $2, $3, $4, TRUE)";
+        $insert_query = "INSERT INTO users (employee_id, full_name, username, user_type_id, password, status)
+                         VALUES ($1, $2, $3, $4, $5, TRUE)";
         $params = array(
             $employee['employee_id'], 
             $employee['employee_name'],  
             $employee['employee_email'],
+            $employee['user_type_id'],
             $password
         );
         $insert_result = pg_query_params($conn, $insert_query, $params);
@@ -87,9 +88,14 @@ if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
             $update_result = pg_query_params($conn, $update_query, array($employee['employee_id']));
     
             if ($update_result) {
-                echo "User approved and moved to users table successfully, and employee status updated!";
+                // echo "User approved and moved to users table successfully, and employee status updated!";
+                // echo "<br><a href=\"dashboard.php\"> Go to your Dashboard.</a>";
+                header("Location: view_profiles.php?message=Employee%20approved%20successfully&type=success");
+                exit();
             } else {
-                die("Error updating employee status: " . pg_last_error($conn));
+                //die("Error updating employee status: " . pg_last_error($conn));
+                header("Location: view_profiles.php?message=Error%20updating%20status&type=error");
+                exit();
             }
         } else {
             die("Error inserting user: " . pg_last_error($conn));
@@ -99,18 +105,21 @@ if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
     }
 } elseif ($action === "reject") {
     $delete_user_result = pg_query_params($conn, "DELETE FROM users WHERE employee_id = $1", array($employee_id));
-
+    $update_employee_status = pg_query_params($conn, "UPDATE employees SET status = FALSE WHERE employee_id = $1", array($employee_id));
     if ($delete_user_result) {
-        $delete_employee_result = pg_query_params($conn, "DELETE FROM employees WHERE employee_id = $1", array($employee_id));
-
-        if ($delete_employee_result) {
-            echo "Employee rejected and removed from the system.";
-        } else {
-            die("Error rejecting employee from employees table: " . pg_last_error($conn));
+        if ($_SESSION['user_id'] == $employee_id) {
+            session_destroy();  
+            header("Location: logout.php");  
+            exit();
         }
+
+        header("Location: view_profiles.php?message=Employee%20rejected%20successfully&type=error");
+        exit();
     } else {
-        die("Error rejecting employee from users table: " . pg_last_error($conn));
-    }
+            // die("Error rejecting employee from employees table: " . pg_last_error($conn));
+            header("Location: view_profiles.php?message=Error%20rejecting%20employee&type=success");
+            exit();
+        }
 } else {
     die("Invalid action.");
 }

@@ -53,6 +53,12 @@ if (!$result) {
       </header>
     <div class="container p-5 mt-5">
         <h2 class="mb-4 text-center">Manage Employees</h2>
+        <?php if (isset($_GET['message']) && isset($_GET['type'])): ?>
+            <div class="alert alert-<?php echo ($_GET['type'] === 'success') ? 'success' : 'danger'; ?> alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($_GET['message']); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -82,9 +88,15 @@ if (!$result) {
                         <?php endif; ?>
 
                         <?php if ($row['status'] === 't'): ?>
-                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" class="btn btn-danger">Reject</a>
+                            <!-- <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" class="btn btn-danger">Reject</a> -->
+                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" 
+                            class="btn btn-danger"
+                            onclick="return confirm('Are you sure you want to reject this employee?');">Reject</a>
                         <?php else: ?>
-                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve" class="btn btn-success">Approve</a>
+                            <!-- <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve" class="btn btn-success">Approve</a> -->
+                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve"
+                            class="btn btn-success"
+                            onclick="return confirm('Are you sure you want to approve this employee?');">Approve</a>
                         <?php endif; ?>
                     </td>
                 </tr>

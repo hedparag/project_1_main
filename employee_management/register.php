@@ -70,6 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($result) {
             echo "<div class='alert alert-success'>Registration submitted! Waiting for admin approval.</div>";
+            echo "<br><a href=\"home.html\"> Go to Home Page.</a>";
         } else {
             echo "<div class='alert alert-danger'>Error: " . pg_last_error($conn) . "</div>";
         }
