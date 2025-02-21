@@ -28,11 +28,9 @@ $user_types = [1 => "Admin", 2 => "Manager", 3 => "Employee", 4 => "Intern"];
 </head>
 <body>
     <div class="container p-5">
-        <h2 class="text-center mb-4">Employee Details</h2>
-
-        <div class="card mx-auto shadow-lg" style="max-width: 40rem;">
+        <div class="card mx-auto shadow-lg m-4" style="max-width: 40rem;">
             <?php if (!empty($employee['profile_image'])): ?>
-                <img src="uploads/<?php echo htmlspecialchars($employee['profile_image']); ?>" class="card-img-top" alt="Profile Image">
+                <img src="<?php echo htmlspecialchars($employee['profile_image']); ?>" class="card-img-top rounded-circle" style="width: 100px; height: 100px; object-fit: cover; display: block; margin: auto;" alt="Profile Image">
             <?php endif; ?>
 
             <div class="card-body">

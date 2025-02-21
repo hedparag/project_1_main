@@ -52,11 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $errors[] = "Image size should not exceed 2MB.";
         } else {
             $upload_dir = "uploads/";
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
-            }
-
-            $unique_name = uniqid() . "_" . basename($_FILES["profile_image"]["name"]);
+            $unique_name = $_FILES["profile_image"]["name"];
             $profile_image = $upload_dir . $unique_name;
 
             if (!move_uploaded_file($_FILES["profile_image"]["tmp_name"], $profile_image)) {

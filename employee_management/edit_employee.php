@@ -33,13 +33,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $employee_email = $_POST['employee_email'];
     $employee_phone = $_POST['employee_phone'];
     $salary = $_POST['salary'];
-    $profile_image = $_POST['profile_image'];
+    // $profile_image = $_POST['profile_image'];
     $employee_details = $_POST['employee_details'];
     $employee_skills = $_POST['employee_skills'];
     $dob = $_POST['dob'];
     $user_type_id = $_POST['user_type_id'];
     $department_id = $_POST['department_id'];
     $position_id = $_POST['position_id'];
+
+    $errors = [];
+
+    if (empty($employee_name)) $errors[] = "Employee name is required.";
+    if (empty($employee_email)) $errors[] = "Employee email is required.";
+    if (empty($employee_phone)) $errors[] = "Phone number is required.";
+
+    if (!filter_var($employee_email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format.";
+    }
+
+    if (!preg_match("/^[0-9]{10,15}$/", $employee_phone)) {
+        $errors[] = "Invalid phone number format.";
+    }
+
+    if (!empty($salary) && !is_numeric($salary)) {
+        $errors[] = "Salary must be a numeric value.";
+    }
+
+    $profile_image = $employee['profile_image'];;
+    $allowed_extensions = ['jpg', 'jpeg', 'png'];
+
+    if (!empty($_FILES['profile_image']['name'])) {
+        $file_extension = strtolower(pathinfo($_FILES['profile_image']['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($file_extension, $allowed_extensions)) {
+            $errors[] = "Only JPG, JPEG, and PNG files are allowed.";
+        } elseif (!in_array(mime_content_type($_FILES['profile_image']['tmp_name']), ['image/jpeg', 'image/png'])) {
+            $errors[] = "Invalid image file type.";
+        } elseif ($_FILES['profile_image']['size'] > 2 * 1024 * 1024) {
+            $errors[] = "Image size should not exceed 2MB.";
+        } else {
+            $upload_dir = "uploads/";
+            $unique_name = $_FILES["profile_image"]["name"];
+            $profile_image = $upload_dir . $unique_name;
+
+            if (!move_uploaded_file($_FILES["profile_image"]["tmp_name"], $profile_image)) {
+                $errors[] = "Failed to upload profile image.";
+            } 
+        }
+    }
+
+    if (!empty($errors)) {
+        $_SESSION['error'] = implode("<br>", $errors);
+        header("Location: view_details.php?id=$employee_id");
+        exit();
+    }
 
     $update_employee = "UPDATE employees SET 
     employee_name=$1, employee_email=$2, employee_phone=$3, salary=$4, profile_image=$5, 
@@ -59,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $_SESSION['success'] = "Error updating employee.";
     }
-    header("Location: view_profiles.php");
+        header("Location: view_details.php");
         exit();
 }
 ?>
@@ -84,7 +131,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="alert alert-success"><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
         <?php endif; ?>
 
-        <form action="" method="POST" class="mt-4">
+        <form action="" method="POST" enctype="multipart/form-data" class="mt-4">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
             <div class="mb-3">

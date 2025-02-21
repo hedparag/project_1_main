@@ -26,7 +26,7 @@ $user_type_id = $row['user_type_id'] ?? $user_type_id;
 $employee_skills = 'Not Available';
 $salary = 'Not Available';
 if ($employee_id) {
-    $query = "SELECT employee_id, employee_name, employee_email, employee_phone, salary, employee_details, employee_skills FROM employees WHERE employee_id = $1";
+    $query = "SELECT employee_id, employee_name, employee_email, employee_phone, salary, profile_image, employee_details, employee_skills FROM employees WHERE employee_id = $1";
     $result = pg_query_params($conn, $query, array($employee_id));
     
     if ($result) {
@@ -52,7 +52,7 @@ if ($employee_id) {
 </head>
 <body>
 <header>
-        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: lightgray">
           <div class="container-fluid">
             <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -79,8 +79,10 @@ if ($employee_id) {
         <div class="row">
         <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto">
             <div class="card shadow-lg">
+                <?php if (!empty($userData['profile_image'])): ?>
+                    <img src="<?php echo htmlspecialchars($userData['profile_image']); ?>" class="card-img-top rounded-circle" style="width: 100px; height: 100px; object-fit: cover; display: block; margin: auto;" alt="Profile Image">
+                <?php endif; ?>
                 <div class="card-body">
-                    <h4 class="card-title text-center mb-3">Your Details</h4>
                     <hr>
                     <table class="table">
                         <tbody>
@@ -168,21 +170,21 @@ if ($employee_id) {
                 <?php endif; ?>
                 <?php elseif ($user_type_id == 2): ?>
                     <h3>Manager Panel</h3>
-                    <ul>
-                        <li><a href="manage_employees.php">Manage Employees</a></li>
-                        <li><a href="generate_reports.php">Generate Reports</a></li>
+                    <ul class="list-unstyled nav flex-column">
+                        <li class="nav-item"><a href="manage_employees.php">Manage Employees</a></li>
+                        <li class="nav-item"><a href="generate_reports.php">Generate Reports</a></li>
                     </ul>
                 <?php elseif ($user_type_id == 3): ?>
                     <h3>Employee Dashboard</h3>
-                    <ul>
-                        <li><a href="view_tasks.php">View Tasks</a></li>
-                        <li><a href="submit_reports.php">Submit Reports</a></li>
+                    <ul class="list-unstyled nav flex-column">
+                        <li class="nav-item"><a href="view_tasks.php">View Tasks</a></li>
+                        <li class="nav-item"><a href="submit_reports.php">Submit Reports</a></li>
                     </ul>
                 <?php else: ?>
                     <h3>Intern Dashboard</h3>
-                    <ul>
-                        <li><a href="learning_materials.php">Learning Materials</a></li>
-                        <li><a href="submit_progress.php">Submit Progress</a></li>
+                    <ul class="list-unstyled nav flex-column">
+                        <li class="nav-item"><a href="learning_materials.php">Learning Materials</a></li>
+                        <li class="nav-item"><a href="submit_progress.php">Submit Progress</a></li>
                     </ul>
                 <?php endif; ?>
             </div>

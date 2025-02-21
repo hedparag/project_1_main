@@ -50,7 +50,7 @@ pg_close($conn);
 </head>
 <body>
 <header>
-        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: lightgray;">
           <div class="container-fluid">
             <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
