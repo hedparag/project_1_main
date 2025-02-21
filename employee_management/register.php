@@ -1,12 +1,5 @@
 <?php
 
-session_start();
-if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php"); 
-    exit();
-}
-
-include("include/config.php");
 $errors = [];
  
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -34,6 +27,49 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (!filter_var($employee_email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email format.";
+    }
+
+    if (!preg_match("/^[0-9]{10,15}$/", $employee_phone)) {
+        $errors[] = "Invalid phone number format.";
+    }
+
+    if (!empty($salary) && !is_numeric($salary)) {
+        $errors[] = "Salary must be a numeric value.";
+    }
+
+    $profile_image = null; 
+    if (!empty($_FILES['profile_image']['name'])) {
+        $allowed_extensions = ['jpg', 'jpeg', 'png'];
+        $file_extension = strtolower(pathinfo($_FILES['profile_image']['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($file_extension, $allowed_extensions)) {
+            $errors[] = "Only JPG, JPEG, and PNG files are allowed.";
+        } else {
+            $upload_dir = "uploads/";
+            $profile_image = $upload_dir . time() . "_" . basename($_FILES["profile_image"]["name"]);
+
+            if (!move_uploaded_file($_FILES["profile_image"]["tmp_name"], $profile_image)) {
+                $errors[] = "Failed to upload profile image.";
+            }
+        }
+    }
+
+    if (empty($errors)) {
+        $query = "INSERT INTO employees (user_type_id, department_id, position_id, employee_name, employee_email, employee_phone, salary, profile_image, employee_details, employee_skills, dob, created_at, updated_at, status) 
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW(), FALSE) RETURNING employee_id";
+
+        $params = array($user_type_id, $department_id, $position_id, $employee_name, $employee_email, $employee_phone, $salary, $profile_image, $employee_details, $employee_skills, $dob);
+        $result = pg_query_params($conn, $query, $params);
+
+        if ($result) {
+            echo "<div class='alert alert-success'>Registration submitted! Waiting for admin approval.</div>";
+        } else {
+            echo "<div class='alert alert-danger'>Error: " . pg_last_error($conn) . "</div>";
+        }
+    } else {
+        foreach ($errors as $error) {
+            echo "<div class='alert alert-danger'>$error</div>";
+        }
     }
 
     if (!preg_match("/^[0-9]{10,15}$/", $employee_phone)) {

@@ -15,7 +15,11 @@ $action = $_GET['action'];
 
 if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
 
+<<<<<<< HEAD
     $query = "SELECT employee_id, employee_name, employee_email FROM employees WHERE employee_id = $1";
+=======
+    $query = "SELECT employee_id, employee_name, employee_email, user_type_id FROM employees WHERE employee_id = $1";
+>>>>>>> origin/feature/approve-reject-employee
     $result = pg_query_params($conn, $query, array($employee_id));
     $employee = pg_fetch_assoc($result);
 
@@ -47,7 +51,11 @@ if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
                 <input type="password" class="form-control" name="confirm_password" required>
             </div>
 
+<<<<<<< HEAD
             <button type="submit" class="btn btn-success">Approve</button>
+=======
+            <button type="submit" class="btn btn-success">Confirm</button>
+>>>>>>> origin/feature/approve-reject-employee
             <a href="admin_dashboard.php" class="btn btn-secondary">Cancel</a>
         </form>
     </body>
@@ -67,18 +75,19 @@ if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
     
     $employee_id = $_POST['employee_id'];
 
-    $query = "SELECT employee_id, employee_name, employee_email FROM employees WHERE employee_id = $1";
+    $query = "SELECT employee_id, employee_name, employee_email, user_type_id FROM employees WHERE employee_id = $1";
     $result = pg_query_params($conn, $query, array($employee_id));
     $employee = pg_fetch_assoc($result);
 
     if ($employee) {
-        $insert_query = "INSERT INTO users (employee_id, full_name, username, password, status)
-                         VALUES ($1, $2, $3, $4, TRUE)";
+        $insert_query = "INSERT INTO users (employee_id, full_name, username, password, user_type_id, status)
+                         VALUES ($1, $2, $3, $4, $5, TRUE)";
         $params = array(
             $employee['employee_id'], 
             $employee['employee_name'],  
             $employee['employee_email'],
-            $password
+            $password,
+            $employee['user_type_id']
         );
         $insert_result = pg_query_params($conn, $insert_query, $params);
     
@@ -87,9 +96,13 @@ if ($action === "approve" && $_SERVER["REQUEST_METHOD"] !== "POST") {
             $update_result = pg_query_params($conn, $update_query, array($employee['employee_id']));
     
             if ($update_result) {
-                echo "User approved and moved to users table successfully, and employee status updated!";
+                $_SESSION['success'] = "User approved and moved to users table successfully!";
+                header("Location: view_profiles.php");
+                exit();
             } else {
-                die("Error updating employee status: " . pg_last_error($conn));
+                $_SESSION['error'] = "Error updating employee status: " . pg_last_error($conn);
+                header("Location: view_profiles.php");
+                exit();
             }
         } else {
             die("Error inserting user: " . pg_last_error($conn));
