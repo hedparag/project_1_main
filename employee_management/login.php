@@ -7,31 +7,33 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  if(!hash_equals($SESSION['csrf_token'], $_POST['csrf_token'])) {
-    die("CSRF token validation failed.")
-  }
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
 
-  $username = trim($_POST['username']);
-  $password = trim($_POST['password']);
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-  $query = "SELECT user_id, username, password, user_type_id FROM users WHERE username = $1";
-  $result = pg_query_params($conn, $query, array($username));
+    $query = "SELECT user_id, username, password, user_type_id FROM users WHERE username = $1";
+    $result = pg_query_params($conn, $query, array($username));
 
-  if ($result && pg_num_rows($result) > 0) {
-    $user = pg_fetch_assoc($result);
+    if ($result && pg_num_rows($result) > 0) {
+        $user = pg_fetch_assoc($result);
 
-      if (password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['user_id'];
-        $_SESSION['user_name'] = $user['username'];
-        $_SESSION['user_type_id'] = $user['user_type_id']; 
-        header("Location: dashboard.php");
-        exit();
-      } else {
-        $error = "Invalid password.";
-      }
-  } else {
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['user_name'] = $user['username'];
+            $_SESSION['user_type_id'] = $user['user_type_id']; 
+
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Invalid password.";
+        }
+    } else {
         $error = "User not found.";
-  }
+    }
 }
 pg_close($conn);
 ?>
@@ -48,16 +50,13 @@ pg_close($conn);
 </head>
 <body>
 <header>
-        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: lightgray;">
           <div class="container-fluid">
             <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5 text-center">
                 <li class="nav-item px-1">
                   <a class="nav-link" href="home.html">HOME</a>
-                </li>
-                <li class="nav-item px-1">
-                  <a class="nav-link" href="register.php">REGISTER</a>
                 </li>
                 <li class="nav-item px-1">
                   <a class="nav-link active text-primary" aria-current="page" href="login.php">LOGIN</a>

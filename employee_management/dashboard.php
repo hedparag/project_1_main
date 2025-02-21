@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 include("include/config.php");
 
 if (!isset($_SESSION['user_id'])) {
@@ -22,22 +23,32 @@ $row = pg_fetch_assoc($result);
 $employee_id = $row['employee_id'] ?? null;
 $user_type_id = $row['user_type_id'] ?? $user_type_id;
 
-$employee_skills = 'Not Available';
-$salary = 'Not Available';
+$employee_name = 'Not Available'; 
+$employee_email = 'Not Available'; 
+$employee_phone = 'Not Available';
+$employee_details = 'Not Available'; 
+$employee_skills = 'Not Available'; 
+$salary = 'Not Available'; 
+
 if ($employee_id) {
-    $query = "SELECT employee_id, employee_name, employee_email, employee_phone, salary, employee_details, employee_skills FROM employees WHERE employee_id = $1";
-    $result = pg_query_params($conn, $query, array($employee_id));
+    $query = "SELECT * FROM employees WHERE employee_id = $1";
+
+    $employee_skills = 'Not Available';
+    $salary = 'Not Available';
+    if ($employee_id) {
+        $query = "SELECT * FROM employees WHERE employee_id = $1";
+        $result = pg_query_params($conn, $query, array($employee_id));
     
-    if ($result) {
-        $userData = pg_fetch_assoc($result);
-        $employee_name = $userData['employee_name'] ?? 'Not Available';
-        $employee_email = $userData['employee_email'] ?? 'Not Available';
-        $employee_phone = $userData['employee_phone'] ?? 'Not Available';
-        $salary = $userData['salary'] ?? 'Not Available';
-        $employee_details = $userData['employee_details'] ?? 'Not Available';
-        $employee_skills = $userData['employee_skills'] ?? 'Not Available';
+        if ($result) {
+            $userData = pg_fetch_assoc($result);
+            $employee_name = $userData['employee_name'] ?? 'Not Available'; 
+            $employee_email = $userData['employee_email'] ?? 'Not Available';
+            $employee_phone = $userData['employee_phone'] ?? 'Not Available'; 
+            $salary = $userData['salary'] ?? 'Not Available'; 
+            $employee_details = $userData['employee_details'] ?? 'Not Available'; 
+            $employee_skills = $userData['employee_skills'] ?? 'Not Available';
+        }  
     }
-    
 }
 ?>
 
@@ -52,16 +63,13 @@ if ($employee_id) {
 </head>
 <body>
 <header>
-        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: lightgray">
           <div class="container-fluid">
             <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5 text-center">
                 <li class="nav-item px-1">
                   <a class="nav-link" href="home.html">HOME</a>
-                </li>
-                <li class="nav-item px-1">
-                  <a class="nav-link" href="register.php">REGISTER</a>
                 </li>
                 <li class="nav-item px-1">
                   <a class="nav-link" href="login.php">LOGIN</a>
@@ -80,18 +88,50 @@ if ($employee_id) {
     <div class="container p-5 mt-5">
         <h2 class="text-center">Welcome, <?php echo htmlspecialchars($employee_name); ?>!</h2>
         <div class="row">
-            <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto">
-                <p><strong>Employee ID :</strong> <?php echo htmlspecialchars($employee_id); ?></p>
-                <p><strong>Name :</strong> <?php echo htmlspecialchars($employee_name); ?></p>
-                <p><strong>Email :</strong> <?php echo htmlspecialchars($employee_email); ?></p>
-                <p><strong>Phone Number :</strong> <?php echo htmlspecialchars($employee_phone); ?></p>
-                <p><strong>Salary :</strong> <?php echo htmlspecialchars($salary); ?></p>
-                <p><strong>Details :</strong> <?php echo htmlspecialchars($employee_details); ?></p>
-                <p><strong>Skills :</strong> <?php echo htmlspecialchars($employee_skills); ?></p>
-                <br>
-                <a href="logout.php" class="btn btn-danger">Logout</a>
+        <div class="col-12 col-md-6 py-3 px-3 mt-5 m-auto">
+            <div class="card shadow-lg">
+                <?php if (!empty($userData['profile_image'])): ?>
+                    <img src="<?php echo htmlspecialchars($userData['profile_image']); ?>" class="card-img-top rounded-circle" style="width: 100px; height: 100px; object-fit: cover; display: block; margin: auto;" alt="Profile Image">
+                <?php endif; ?>
+                <div class="card-body">
+                    <hr>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Name:</th>
+                                <td><?php echo htmlspecialchars($employee_name); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td><?php echo htmlspecialchars($employee_email); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Phone Number:</th>
+                                <td><?php echo htmlspecialchars($employee_phone); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Salary:</th>
+                                <td>₹<?php echo htmlspecialchars($salary); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Details:</th>
+                                <td><?php echo htmlspecialchars($employee_details); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Skills:</th>
+                                <td><?php echo htmlspecialchars($employee_skills); ?></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="text-center mt-3">
+                        <a href="logout.php" class="btn btn-danger">Logout</a>
+                    </div>
+                </div>
             </div>
-            <div class="col-12 col-md-6 p-3 mt-5 m-auto">
+        </div>
+
+            <div class="col-12 col-md-6 p-3 mt-5 text-center">
                 <?php if ($user_type_id == 1): ?>
                 <h3>Admin Panel</h3>
                 <ul class="list-unstyled nav flex-column">
@@ -137,21 +177,21 @@ if ($employee_id) {
                 <?php endif; ?>
                 <?php elseif ($user_type_id == 2): ?>
                     <h3>Manager Panel</h3>
-                    <ul>
-                        <li><a href="manage_employees.php">Manage Employees</a></li>
-                        <li><a href="generate_reports.php">Generate Reports</a></li>
+                    <ul class="list-unstyled nav flex-column">
+                        <li class="nav-item"><a href="manage_employees.php" class="nav-link text-dark">Manage Employees</a></li>
+                        <li class="nav-item"><a href="generate_reports.php" class="nav-link text-dark">Generate Reports</a></li>
                     </ul>
                 <?php elseif ($user_type_id == 3): ?>
                     <h3>Employee Dashboard</h3>
-                    <ul>
-                        <li><a href="view_tasks.php">View Tasks</a></li>
-                        <li><a href="submit_reports.php">Submit Reports</a></li>
+                    <ul class="list-unstyled nav flex-column">
+                        <li class="nav-item"><a href="view_tasks.php" class="nav-link text-dark">View Tasks</a></li>
+                        <li class="nav-item"><a href="submit_reports.php" class="nav-link text-dark">Submit Reports</a></li>
                     </ul>
                 <?php else: ?>
                     <h3>Intern Dashboard</h3>
-                    <ul>
-                        <li><a href="learning_materials.php">Learning Materials</a></li>
-                        <li><a href="submit_progress.php">Submit Progress</a></li>
+                    <ul class="list-unstyled nav flex-column">
+                        <li class="nav-item"><a href="learning_materials.php" class="nav-link text-dark">Learning Materials</a></li>
+                        <li class="nav-item"><a href="submit_progress.php" class="nav-link text-dark">Submit Progress</a></li>
                     </ul>
                 <?php endif; ?>
             </div>
