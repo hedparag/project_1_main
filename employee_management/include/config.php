@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 $host = "localhost";
 $port = "5432";     
 $dbname = "employee_db";
@@ -14,10 +16,7 @@ if (!$conn) {
 //     echo "Connected successfully to PostgreSQL!";
 // }
 
-// function checkAdmin() {
-//     if (!isset($_SESSION['user_id']) || $_SESSION['user_type_id'] != 1) {
-//         header("Location: dashboard.php");
-//         exit();
-//     }
-// }
-// ?>
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token']  = bin2hex(random_bytes(32));
+}
+?>

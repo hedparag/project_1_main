@@ -7,10 +7,13 @@ if (isset($_SESSION['user_id'])) {
 }
 
 include("include/config.php");
-
 $errors = [];
  
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (!hash_equals($SESSION['csrf_token'], $_POST['csrf_token'])) {
+        die("CSRF token validation failed.")
+    }
+
     $employee_name = trim($_POST['employee_name']);
     $employee_email = trim($_POST['employee_email']);
     $employee_phone = trim($_POST['employee_phone']);
@@ -25,9 +28,55 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($employee_name)) $errors[] = "Employee name is required.";
     if (empty($employee_email)) $errors[] = "Employee email is required.";
     if (empty($employee_phone)) $errors[] = "Phone number is required.";
+    if (empty($dob)) $errors[] = "Date of Birth is required.";
+    if (empty($department_id)) $errors[] = "Department selection is required.";
+    if (empty($position_id)) $errors[] = "Position selection is required.";
 
     if (!filter_var($employee_email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email format.";
+    }
+
+    if (!preg_match("/^[0-9]{10,15}$/", $employee_phone)) {
+        $errors[] = "Invalid phone number format.";
+    }
+
+    if (!empty($salary) && !is_numeric($salary)) {
+        $errors[] = "Salary must be a numeric value.";
+    }
+
+    $profile_image = null; 
+    if (!empty($_FILES['profile_image']['name'])) {
+        $allowed_extensions = ['jpg', 'jpeg', 'png'];
+        $file_extension = strtolower(pathinfo($_FILES['profile_image']['name'], PATHINFO_EXTENSION));
+
+        if (!in_array($file_extension, $allowed_extensions)) {
+            $errors[] = "Only JPG, JPEG, and PNG files are allowed.";
+        } else {
+            $upload_dir = "uploads/";
+            $profile_image = $upload_dir . time() . "_" . basename($_FILES["profile_image"]["name"]);
+
+            if (!move_uploaded_file($_FILES["profile_image"]["tmp_name"], $profile_image)) {
+                $errors[] = "Failed to upload profile image.";
+            }
+        }
+    }
+
+    if (empty($errors)) {
+        $query = "INSERT INTO employees (user_type_id, department_id, position_id, employee_name, employee_email, employee_phone, salary, profile_image, employee_details, employee_skills, dob, created_at, updated_at, status) 
+                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW(), FALSE) RETURNING employee_id";
+
+        $params = array($user_type_id, $department_id, $position_id, $employee_name, $employee_email, $employee_phone, $salary, $profile_image, $employee_details, $employee_skills, $dob);
+        $result = pg_query_params($conn, $query, $params);
+
+        if ($result) {
+            echo "<div class='alert alert-success'>Registration submitted! Waiting for admin approval.</div>";
+        } else {
+            echo "<div class='alert alert-danger'>Error: " . pg_last_error($conn) . "</div>";
+        }
+    } else {
+        foreach ($errors as $error) {
+            echo "<div class='alert alert-danger'>$error</div>";
+        }
     }
 
     if (!preg_match("/^[0-9]{10,15}$/", $employee_phone)) {
@@ -93,10 +142,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-    
-    </header>
-    <div class="container p-3">
+<header>
+    <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
+          <div class="container-fluid">
+            <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5 text-center">
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="home.html">HOME</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link active text-primary" aria-current="page" href="register.php">REGISTER</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="login.php">LOGIN</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="dashboard.php">DASHBOARD</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="logout.php">LOGOUT</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
+    <div class="container p-5 mt-5">
         <h2 class='p-3 text-center'>Employee Registration</h2>
         <form action="register.php" method="POST" enctype="multipart/form-data">
             <div class="mb-3">

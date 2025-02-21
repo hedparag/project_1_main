@@ -29,13 +29,16 @@ if (!$result) {
 </head>
 <body>
 <header>
-        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: lightgray;">
+        <nav class="navbar navbar-expand-lg custom-navbar px-4 border-bottom rounded-bottom fixed-top" style="background-color: #343a40;">
           <div class="container-fluid">
             <a class="navbar-brand fs-6" href="home.html"><h1>Fusion<span class="text-primary">Works</span></h1></a>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fs-5 text-center">
                 <li class="nav-item px-1">
                   <a class="nav-link" href="home.html">HOME</a>
+                </li>
+                <li class="nav-item px-1">
+                  <a class="nav-link" href="register.php">REGISTER</a>
                 </li>
                 <li class="nav-item px-1">
                   <a class="nav-link" href="login.php">LOGIN</a>
@@ -53,15 +56,10 @@ if (!$result) {
       </header>
     <div class="container p-5 mt-5">
         <h2 class="mb-4 text-center">Manage Employees</h2>
-        <?php if (isset($_GET['message']) && isset($_GET['type'])): ?>
-            <div class="alert alert-<?php echo ($_GET['type'] === 'success') ? 'success' : 'danger'; ?> alert-dismissible fade show" role="alert">
-                <?php echo htmlspecialchars($_GET['message']); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Department</th>
@@ -72,6 +70,7 @@ if (!$result) {
             <tbody>
                 <?php while ($row = pg_fetch_assoc($result)) { $data[] = $row; ?>
                 <tr>
+                    <td><?php echo htmlspecialchars($row['employee_id']); ?></td>
                     <td><?php echo htmlspecialchars($row['employee_name']); ?></td>
                     <td><?php echo htmlspecialchars($row['employee_email']); ?></td>
                     <td><?php echo htmlspecialchars($row['department_name']); ?></td>
@@ -79,24 +78,12 @@ if (!$result) {
                         <?php echo ($row['status'] == 't') ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-danger">Pending</span>'; ?>
                     </td>
                     <td>
-                        <a href="view_details.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-warning">View Details</a>
-
+                        <a href="edit_employee.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-warning">Edit</a>
+                        <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-primary">Reset Password</a>
                         <?php if ($row['status'] === 't'): ?>
-                          <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>&hash=<?php echo md5($row['employee_id'].'abcd') ?>" class="btn btn-primary">Reset Username & Password</a>
+                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" class="btn btn-danger">Reject</a>
                         <?php else: ?>
-                          <a href="reset_password.php?id=<?php echo htmlspecialchars ($row['employee_id']); ?>" class="btn btn-secondary disabled">Reset Username & Password</a>
-                        <?php endif; ?>
-
-                        <?php if ($row['status'] === 't'): ?>
-                            <!-- <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" class="btn btn-danger">Reject</a> -->
-                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=reject" 
-                            class="btn btn-danger"
-                            onclick="return confirm('Are you sure you want to reject this employee?');">Reject</a>
-                        <?php else: ?>
-                            <!-- <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve" class="btn btn-success">Approve</a> -->
-                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve"
-                            class="btn btn-success"
-                            onclick="return confirm('Are you sure you want to approve this employee?');">Approve</a>
+                            <a href="approve_employee.php?employee_id=<?php echo htmlspecialchars($row['employee_id']); ?>&action=approve" class="btn btn-success">Approve</a>
                         <?php endif; ?>
                     </td>
                 </tr>

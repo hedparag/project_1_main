@@ -116,43 +116,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-    <title>Edit Employee</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-5">
-    <h2>Edit Employee</h2>
-
-    <?php if ($error): ?>
-        <div class="alert alert-danger"><?php echo $error; ?></div>
-    <?php endif; ?>
-    <?php if ($success): ?>
-        <div class="alert alert-success"><?php echo $success; ?></div>
-    <?php endif; ?>
-
-    <form method="POST">
-        <div class="mb-3">
-            <label class="form-label">Full Name</label>
-            <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($employee['employee_name']); ?>" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars($employee['employee_email']); ?>" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Department</label>
-            <input type="number" name="department_id" class="form-control" value="<?php echo htmlspecialchars($employee['department_id']); ?>" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Position</label>
-            <input type="number" name="position_id" class="form-control" value="<?php echo htmlspecialchars($employee['position_id']); ?>" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a href="edit_profile.php" class="btn btn-secondary">Back</a>
-    </form>
-</div>
-=======
     <title>Edit Employee Details</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
@@ -256,6 +219,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         <?php } ?>
     </div>
->>>>>>> origin/feature/dashboard
 </body>
 </html>
